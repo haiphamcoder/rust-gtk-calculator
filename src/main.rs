@@ -1,3 +1,9 @@
+mod config;
+mod app;
+
+use app::CalculateApp;
+
 fn main() {
-    println!("Hello, world!");
+    let app = CalculateApp::new("org.gtk3-rs.calculator", "config.cfg");
+    app.run();
 }
