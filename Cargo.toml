@@ -1,0 +1,9 @@
+[package]
+name = "gtk-rust-calculator"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+glib = "0.20.7"
+gtk = "0.18.2"
+meval = "0.2.0"
