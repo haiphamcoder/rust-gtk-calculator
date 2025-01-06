@@ -1,0 +1,90 @@
+name: Build and Release Debian Package
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build .deb Package
+    runs-on: ubuntu-20.04
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Install dependencies
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y libgtk-3-dev dpkg-dev
+
+      # Step 3: Set up Rust
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      # Step 4: Build the application
+      - name: Build application
+        run: cargo build --release
+
+      # Step 5: Create .deb package
+      - name: Create .deb package
+        run: |
+          mkdir -p package/DEBIAN
+          mkdir -p package/usr/local/bin
+
+          # Copy the built binary
+          cp target/release/rust-gtk-calculator package/usr/local/bin/
+          cp config.cfg package/usr/local/bin/
+
+          # Write control file
+          cat <<EOF > package/DEBIAN/control
+          Package: rust-gtk-calculator
+          Version: 1.0.0
+          Section: utils
+          Priority: optional
+          Architecture: amd64
+          Maintainer: Hai Pham Ngoc <ngochai285nd@gmail.com>
+          Description: A Rust GTK Calculator built with GTK 3.
+          EOF
+
+          # Build the .deb package
+          dpkg-deb --build package
+
+      # Step 6: Upload the .deb package as an artifact
+      - name: Upload .deb package
+        uses: actions/upload-artifact@v3
+        with:
+          name: rust-gtk-calculator-deb
+          path: package.deb
+
+  release:
+    name: Release .deb Package
+    runs-on: ubuntu-20.04
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      # Step 1: Download the artifact from the build job
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: rust-gtk-calculator-deb
+
+      # Step 2: Publish to GitHub Releases
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: rust-gtk-calculator-deb
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          body: |
+            This release contains the `.deb` package for the Rust GTK Calculator.
+            - Architecture: amd64
+            - Tested on Ubuntu 20.04
