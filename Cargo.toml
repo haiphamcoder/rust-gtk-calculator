@@ -1,5 +1,5 @@
 [package]
-name = "gtk-rust-calculator"
+name = "rust-gtk-calculator"
 version = "0.1.0"
 edition = "2021"
 
