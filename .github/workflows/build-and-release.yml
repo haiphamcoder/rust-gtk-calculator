@@ -82,7 +82,9 @@ jobs:
       - name: Create GitHub Release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: rust-gtk-calculator-deb
+          artifacts: |
+            package.deb
+            rust-gtk-calculator-deb
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
